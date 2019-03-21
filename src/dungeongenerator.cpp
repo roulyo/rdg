@@ -39,7 +39,7 @@ namespace rdg
 
             bool intersectsRoom = false;
 
-            for (const Room& otherRoom : _dungeon->m_Rooms)
+            for (const Room& otherRoom : _dungeon->GetRooms())
             {
                 if (room.Intersects(otherRoom))
                 {
@@ -50,7 +50,7 @@ namespace rdg
 
             if (!intersectsRoom)
             {
-                _dungeon->m_Rooms.push_back(room);
+                _dungeon->AddRoom(room);
                 ++i;
             }
         }
@@ -59,14 +59,14 @@ namespace rdg
     //----------------------------------------------------------------------------
     void DungeonGenerator::LinkRooms(const Dungeon::Ptr& _dungeon)
     {
-        for (const Room& room : _dungeon->m_Rooms)
+        for (const Room& room : _dungeon->GetRooms())
         {
             for (const Door& door : room.GetDoors())
             {
-                Room* anotherRoomPtr = nullptr;
+                const Room* anotherRoomPtr = nullptr;
                 do
                 {
-                    anotherRoomPtr = &(_dungeon->m_Rooms[rand() % _dungeon->m_Rooms.size()]);
+                    anotherRoomPtr = &(_dungeon->GetRooms()[rand() % _dungeon->GetRooms().size()]);
 
                 } while (room.GetId() == anotherRoomPtr->GetId());
 
@@ -75,7 +75,7 @@ namespace rdg
 
                 Corridor corridor(door, *anotherDoorPtr);
 
-                _dungeon->m_Corridors.push_back(corridor);
+                _dungeon->AddCorridor(corridor);
             }
         }
     }
@@ -101,18 +101,18 @@ namespace rdg
         {
             bool selected = false;
 
-            for (const Room& room : _dungeon->m_Rooms)
+            for (const Room& room : _dungeon->GetRooms())
             {
                 if (room.Intersects(bubble) && !room.Contains(bubble))
                 {
                     selected = true;
-                    _dungeon->m_Bubbles.push_back(bubble);
+                    _dungeon->AddBubble(bubble);
                 }
             }
 
             if (!selected)
             {
-                for (const Corridor& corridor : _dungeon->m_Corridors)
+                for (const Corridor& corridor : _dungeon->GetCorridors())
                 {
                     Vector2d vectorAL = { corridor.GetEndpointA().GetCoord(), corridor.GetTurnCoord() };
                     Vector2d vectorLB = { corridor.GetTurnCoord(), corridor.GetEndpointB().GetCoord() };
@@ -120,7 +120,7 @@ namespace rdg
                     if (Room(vectorAL).Intersects(bubble) || Room(vectorLB).Intersects(bubble))
                     {
                         selected = true;
-                        _dungeon->m_Bubbles.push_back(bubble);
+                        _dungeon->AddBubble(bubble);
                     }
                 }
             }

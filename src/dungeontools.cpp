@@ -49,7 +49,7 @@ namespace rdg
     //----------------------------------------------------------------------------
     void DungeonTools::Print(const Dungeon& _dungeon)
     {
-        DungeonMatrix* world = new DungeonMatrix(_dungeon.m_Size.w);
+        DungeonMatrix* world = new DungeonMatrix(_dungeon.GetSize().w);
         GetDungeonMatrix(_dungeon, *world);
 
         Print(*world);
@@ -74,9 +74,9 @@ namespace rdg
     //----------------------------------------------------------------------------
     void DungeonTools::GetDungeonMatrix(const Dungeon& _dungeon, DungeonMatrix& _outMatrix)
     {
-        DungeonToolsHelper::DumpRooms(_dungeon.m_Rooms, _outMatrix);
-        DungeonToolsHelper::DumpRooms(_dungeon.m_Bubbles, _outMatrix);
-        DungeonToolsHelper::DumpCorridors(_dungeon.m_Corridors, _outMatrix);
+        DungeonToolsHelper::DumpRooms(_dungeon.GetRooms(), _outMatrix);
+        DungeonToolsHelper::DumpRooms(_dungeon.GetBubbles(), _outMatrix);
+        DungeonToolsHelper::DumpCorridors(_dungeon.GetCorridors(), _outMatrix);
     }
 
 }

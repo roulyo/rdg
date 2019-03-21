@@ -199,4 +199,46 @@ namespace rdg
     {
     }
 
+    //----------------------------------------------------------------------------
+    void Dungeon::AddRoom(const Room& _room)
+    {
+        m_Rooms.push_back(_room);
+    }
+
+    //----------------------------------------------------------------------------
+    void Dungeon::AddBubble(const Room& _bubble)
+    {
+        m_Bubbles.push_back(_bubble);
+    }
+
+    //----------------------------------------------------------------------------
+    void Dungeon::AddCorridor(const Corridor& _corridor)
+    {
+        m_Corridors.push_back(_corridor);
+    }
+
+    //----------------------------------------------------------------------------
+    const Coord2d& Dungeon::GetSize() const
+    {
+        return m_Size;
+    }
+
+    //----------------------------------------------------------------------------
+    const std::vector<Room>& Dungeon::GetRooms() const
+    {
+        return m_Rooms;
+    }
+
+    //----------------------------------------------------------------------------
+    const std::vector<Room>& Dungeon::GetBubbles() const
+    {
+        return m_Bubbles;
+    }
+
+    //----------------------------------------------------------------------------
+    const std::vector<Corridor>& Dungeon::GetCorridors() const
+    {
+        return m_Corridors;
+    }
+
 }

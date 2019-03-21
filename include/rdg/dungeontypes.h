@@ -136,7 +136,16 @@ namespace rdg
 
         Dungeon(const Coord2d& _size);
 
-    public:
+        void AddRoom(const Room& _room);
+        void AddBubble(const Room& _bubble);
+        void AddCorridor(const Corridor& _corridor);
+
+        const Coord2d& GetSize() const;
+        const std::vector<Room>& GetRooms() const;
+        const std::vector<Room>& GetBubbles() const;
+        const std::vector<Corridor>& GetCorridors() const;
+
+    private:
         Coord2d                 m_Size;
 
         std::vector<Room>       m_Rooms;
