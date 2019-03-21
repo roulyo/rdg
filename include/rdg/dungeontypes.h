@@ -50,13 +50,13 @@ namespace rdg
     class DungeonMatrix
     {
     private:
-        typedef std::vector<std::vector<bool>>  MatrixType;
+        typedef std::vector<std::vector<bool> >  MatrixType;
 
     public:
         DungeonMatrix(unsigned _size);
 
-        const std::vector<std::vector<bool>>& operator*() const;
-        std::vector<std::vector<bool>>& operator*();
+        const std::vector<std::vector<bool> >& operator*() const;
+        std::vector<std::vector<bool> >& operator*();
 
         const std::vector<bool>& operator[](unsigned _index) const;
         std::vector<bool>& operator[](unsigned _index);
