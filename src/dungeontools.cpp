@@ -12,9 +12,9 @@ namespace rdg
         //----------------------------------------------------------------------------
         static void DumpRoom(const Room& _room, DungeonMatrix& _outMatrix)
         {
-            for (int i = _room.m_Coord.x; i < _room.m_Coord.x + _room.m_Size.w; ++i)
+            for (int i = _room.GetCoord().x; i < _room.GetCoord().x + _room.GetSize().w; ++i)
             {
-                for (int j = _room.m_Coord.y; j < _room.m_Coord.y + _room.m_Size.h; ++j)
+                for (int j = _room.GetCoord().y; j < _room.GetCoord().y + _room.GetSize().h; ++j)
                 {
                     _outMatrix[i][j] = true;
                 }
@@ -35,11 +35,11 @@ namespace rdg
         {
             for (const Corridor& corridor : _corridors)
             {
-                Room vectorAL({ corridor.m_EndpointA.m_Coord, corridor.m_LTurnCoord });
-                Room vectorLB({ corridor.m_LTurnCoord, corridor.m_EndpointB.m_Coord });
+                Vector2d vecAL = { corridor.GetEndpointA().GetCoord(), corridor.GetTurnCoord() };
+                Vector2d vecLB = { corridor.GetTurnCoord(), corridor.GetEndpointB().GetCoord() };
 
-                DumpRoom(vectorAL, _outMatrix);
-                DumpRoom(vectorLB, _outMatrix);
+                DumpRoom(Room(vecAL), _outMatrix);
+                DumpRoom(Room(vecLB), _outMatrix);
             }
         }
 

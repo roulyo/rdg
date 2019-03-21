@@ -59,34 +59,21 @@ namespace rdg
     //----------------------------------------------------------------------------
     void DungeonGenerator::LinkRooms(const Dungeon::Ptr& _dungeon)
     {
-        for (Room& room : _dungeon->m_Rooms)
+        for (const Room& room : _dungeon->m_Rooms)
         {
-            for (Door& door : room.m_Doors)
+            for (const Door& door : room.GetDoors())
             {
-                //if (door.m_Linked)
-                //{
-                //    continue;
-                //}
-
                 Room* anotherRoomPtr = nullptr;
                 do
                 {
                     anotherRoomPtr = &(_dungeon->m_Rooms[rand() % _dungeon->m_Rooms.size()]);
 
-                } while (room.m_Id == anotherRoomPtr->m_Id);
+                } while (room.GetId() == anotherRoomPtr->GetId());
 
-                Door* anotherDoorPtr = nullptr;
-                //do
-                //{
-                anotherDoorPtr = &(anotherRoomPtr->m_Doors[rand() % anotherRoomPtr->m_Doors.size()]);
-
-                //} while (doorPtr->m_Linked);
+                const Door* anotherDoorPtr = nullptr;
+                anotherDoorPtr = &(anotherRoomPtr->GetDoors()[rand() % anotherRoomPtr->GetDoors().size()]);
 
                 Corridor corridor(door, *anotherDoorPtr);
-                //corridor.m_Orientation = (rand() % 2) ? Corridor::Orientation::NW : Corridor::Orientation::SE;
-
-                //door.m_Linked = true;
-                //doorPtr->m_Linked = true;
 
                 _dungeon->m_Corridors.push_back(corridor);
             }
@@ -106,7 +93,7 @@ namespace rdg
             Room bubble = CreateBubble();
 
             tmpBubbles.push_back(bubble);
-            totalSurface += bubble.m_Size.h * bubble.m_Size.w;
+            totalSurface += bubble.GetSize().h * bubble.GetSize().w;
 
         }
 
@@ -127,10 +114,10 @@ namespace rdg
             {
                 for (const Corridor& corridor : _dungeon->m_Corridors)
                 {
-                    Room vectorAL({ corridor.m_EndpointA.m_Coord, corridor.m_LTurnCoord });
-                    Room vectorLB({ corridor.m_LTurnCoord, corridor.m_EndpointB.m_Coord });
+                    Vector2d vectorAL = { corridor.GetEndpointA().GetCoord(), corridor.GetTurnCoord() };
+                    Vector2d vectorLB = { corridor.GetTurnCoord(), corridor.GetEndpointB().GetCoord() };
 
-                    if (vectorAL.Intersects(bubble) || vectorLB.Intersects(bubble))
+                    if (Room(vectorAL).Intersects(bubble) || Room(vectorLB).Intersects(bubble))
                     {
                         selected = true;
                         _dungeon->m_Bubbles.push_back(bubble);
@@ -143,68 +130,60 @@ namespace rdg
     //----------------------------------------------------------------------------
     Room DungeonGenerator::CreateRoom()
     {
-        static int roomId = 0;
+        Coord2d size;
+        Coord2d coord;
 
-        Room room;
+        size.w = ms_Param.RoomSizeMin + (rand() % (ms_Param.RoomSizeMax - ms_Param.RoomSizeMin));
+        size.h = ms_Param.RoomSizeMin + (rand() % (ms_Param.RoomSizeMax - ms_Param.RoomSizeMin));
 
-        room.m_Size.w = ms_Param.RoomSizeMin + (rand() % (ms_Param.RoomSizeMax - ms_Param.RoomSizeMin));
-        room.m_Size.h = ms_Param.RoomSizeMin + (rand() % (ms_Param.RoomSizeMax - ms_Param.RoomSizeMin));
+        coord.x = rand() % (ms_Param.WorldSize - size.w);
+        coord.y = rand() % (ms_Param.WorldSize - size.h);
 
-        room.m_Coord.x = rand() % (ms_Param.WorldSize - room.m_Size.w);
-        room.m_Coord.y = rand() % (ms_Param.WorldSize - room.m_Size.h);
+        Room room(coord, size);
 
-        room.m_Doors.push_back(CreateDoor(room));
+        unsigned maxDoor = (rand() % ms_Param.RoomDoorsCount) + 1;
 
-        int maxDoor = rand() % ms_Param.RoomDoorsCount;
-
-        for (int i = 0; i < maxDoor; ++i)
+        do 
         {
-            room.m_Doors.push_back(CreateDoor(room));
-        }
+            room.AddDoor(CreateDoor(room));
 
-        room.m_Id = roomId++;
-
+        } while (room.GetDoors().size() < maxDoor);
+        
         return room;
     }
 
     //----------------------------------------------------------------------------
     Door DungeonGenerator::CreateDoor(const Room& _room)
     {
-        Door door;
         Coord2d doorCoord;
 
         if (rand() % 2)
         {
-            doorCoord.x = _room.m_Coord.x + (_room.m_Size.w * (rand() % 2));
-            doorCoord.y = _room.m_Coord.y + (rand() % _room.m_Size.h);
+            doorCoord.x = _room.GetCoord().x + (_room.GetSize().w * (rand() % 2));
+            doorCoord.y = _room.GetCoord().y + (rand() % _room.GetSize().h);
         }
         else
         {
-            doorCoord.x = _room.m_Coord.x + (rand() % _room.m_Size.w);
-            doorCoord.y = _room.m_Coord.y + (_room.m_Size.h * (rand() % 2));
+            doorCoord.x = _room.GetCoord().x + (rand() % _room.GetSize().w);
+            doorCoord.y = _room.GetCoord().y + (_room.GetSize().h * (rand() % 2));
         }
 
-        door.m_Coord = doorCoord;
-
-        return door;
+        return Door(doorCoord);;
     }
 
     //----------------------------------------------------------------------------
     Room DungeonGenerator::CreateBubble()
     {
-        static int bubbleId = 0;
+        Coord2d size;
+        Coord2d coord;
 
-        Room bubble;
+        size.w = (rand() % 3) + 2;
+        size.h = (rand() % 3) + 2;
 
-        bubble.m_Size.w = (rand() % 3) + 2;
-        bubble.m_Size.h = (rand() % 3) + 2;
+        coord.x = rand() % (ms_Param.WorldSize - size.w);
+        coord.y = rand() % (ms_Param.WorldSize - size.h);
 
-        bubble.m_Coord.x = rand() % (ms_Param.WorldSize - bubble.m_Size.w);
-        bubble.m_Coord.y = rand() % (ms_Param.WorldSize - bubble.m_Size.h);
-
-        bubble.m_Id = bubbleId++;
-
-        return bubble;
+        return Room(coord, size);
     }
 
 }

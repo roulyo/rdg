@@ -52,12 +52,35 @@ namespace rdg
 
     //----------------------------------------------------------------------------
     //----------------------------------------------------------------------------
-    Room::Room()
+    Door::Door(const Coord2d& _coord)
+        : m_Coord(_coord)
+    {
+    }
+
+    //----------------------------------------------------------------------------
+    const Coord2d& Door::GetCoord() const
+    {
+        return m_Coord;
+    }
+
+
+
+
+    //----------------------------------------------------------------------------
+    //----------------------------------------------------------------------------
+    int Room::ms_IdCount = 0;
+
+    //----------------------------------------------------------------------------
+    Room::Room(const Coord2d& _coord, const Coord2d& _size)
+        : m_Id(ms_IdCount++)
+        , m_Coord(_coord)
+        , m_Size(_size)
     {
     }
 
     //----------------------------------------------------------------------------
     Room::Room(const Vector2d& _diagonal)
+        : m_Id(ms_IdCount++)
     {
         int minX = std::min(_diagonal.Origin.x, _diagonal.End.x);
         int minY = std::min(_diagonal.Origin.y, _diagonal.End.y);
@@ -101,7 +124,35 @@ namespace rdg
 
         return Contains(topLeft) && Contains(topRight) && Contains(bottomLeft) && Contains(bottomRight);
     }
+    
+    //----------------------------------------------------------------------------
+    int Room::GetId() const
+    {
+        return m_Id;
+    }
 
+    //----------------------------------------------------------------------------
+    void Room::AddDoor(const Door& _door)
+    {
+        m_Doors.push_back(_door);
+    }
+
+    //----------------------------------------------------------------------------
+    const Coord2d& Room::GetCoord() const
+    {
+        return m_Coord;
+    }
+
+    //----------------------------------------------------------------------------
+    const Coord2d& Room::GetSize() const
+    {
+        return m_Size;
+    }
+
+    const std::vector<Door>& Room::GetDoors() const
+    {
+        return m_Doors;
+    }
 
 
 
@@ -113,14 +164,31 @@ namespace rdg
     {
         if (rand() % 2)
         {
-            m_LTurnCoord = { m_EndpointA.m_Coord.x, m_EndpointB.m_Coord.y };
+            m_TurnCoord = { m_EndpointA.GetCoord().x, m_EndpointB.GetCoord().y };
         }
         else
         {
-            m_LTurnCoord = { m_EndpointB.m_Coord.x, m_EndpointA.m_Coord.y };
+            m_TurnCoord = { m_EndpointB.GetCoord().x, m_EndpointA.GetCoord().y };
         }
     }
 
+    //----------------------------------------------------------------------------
+    const Door& Corridor::GetEndpointA() const
+    {
+        return m_EndpointA;
+    }
+
+    //----------------------------------------------------------------------------
+    const Door& Corridor::GetEndpointB() const
+    {
+        return m_EndpointB;
+    }
+
+    //----------------------------------------------------------------------------
+    const Coord2d& Corridor::GetTurnCoord() const
+    {
+        return m_TurnCoord;
+    }
 
 
 

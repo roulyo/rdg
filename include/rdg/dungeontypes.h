@@ -72,6 +72,11 @@ namespace rdg
     class Door
     {
     public:
+        Door(const Coord2d& _coord);
+
+        const Coord2d& GetCoord() const;
+
+    private:
         Coord2d   m_Coord;
 
     };
@@ -80,18 +85,26 @@ namespace rdg
     class Room
     {
     public:
-        Room();
+        Room(const Coord2d& _coord, const Coord2d& _size);
         Room(const Vector2d& _diagonal);
 
         bool Intersects(const Room& _other) const;
         bool Contains(const Coord2d& _point) const;
         bool Contains(const Room& _other) const;
 
-    public:
-        int m_Id;
+        void AddDoor(const Door& _door);
 
-        Coord2d m_Coord;
-        Coord2d m_Size;
+        int GetId() const;
+        const Coord2d& GetCoord() const;
+        const Coord2d& GetSize() const;
+        const std::vector<Door>& GetDoors() const;
+
+    private:
+        static int  ms_IdCount;
+        int         m_Id;
+
+        Coord2d     m_Coord;
+        Coord2d     m_Size;
 
         std::vector<Door>  m_Doors;
 
@@ -103,11 +116,15 @@ namespace rdg
     public:
         Corridor(const Door& _doorA, const Door& _doorB);
 
-    public:
+        const Door& GetEndpointA() const;
+        const Door& GetEndpointB() const;
+        const Coord2d& GetTurnCoord() const;
+
+    private:
         Door    m_EndpointA;
         Door    m_EndpointB;
 
-        Coord2d m_LTurnCoord;
+        Coord2d m_TurnCoord;
 
     };
 
