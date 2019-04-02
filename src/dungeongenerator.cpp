@@ -1,6 +1,7 @@
 #include <rdg/dungeongenerator.h>
 
 #include <cassert>
+#include <iostream>
 
 namespace rdg
 {
@@ -18,8 +19,10 @@ namespace rdg
         dungeon.reset(new Dungeon({ static_cast<int>(ms_Param.WorldSize), static_cast<int>(ms_Param.WorldSize) }));
 
         GenerateRooms(dungeon);
+        GenerateAccesses(dungeon);
         LinkRooms(dungeon);
         GenerateBubbles(dungeon);
+
 
         return dungeon;
     }
@@ -83,7 +86,7 @@ namespace rdg
     //----------------------------------------------------------------------------
     void DungeonGenerator::GenerateBubbles(const Dungeon::Ptr& _dungeon)
     {
-        const unsigned aimedSurface = ms_Param.WorldSize * ms_Param.WorldSize * ms_Param.BubbleIntensity / 100;
+        static const unsigned aimedSurface(ms_Param.WorldSize * ms_Param.WorldSize * ms_Param.BubbleIntensity / 100);
         unsigned totalSurface = 0;
 
         std::vector<Room> tmpBubbles;
@@ -94,11 +97,15 @@ namespace rdg
 
             tmpBubbles.push_back(bubble);
             totalSurface += bubble.GetSize().h * bubble.GetSize().w;
-
         }
 
         for (const Room& bubble : tmpBubbles)
         {
+            if (bubble.Contains(_dungeon->GetEntrance()) || bubble.Contains(_dungeon->GetExit()))
+            {
+                continue;
+            }
+
             bool selected = false;
 
             for (const Room& room : _dungeon->GetRooms())
@@ -119,7 +126,6 @@ namespace rdg
 
                     if (Room(vectorAL).Intersects(bubble) || Room(vectorLB).Intersects(bubble))
                     {
-                        selected = true;
                         _dungeon->AddBubble(bubble);
                     }
                 }
@@ -128,20 +134,64 @@ namespace rdg
     }
 
     //----------------------------------------------------------------------------
+    static bool CouldBlockCorridor(const Coord2d& _point, const Dungeon::Ptr& _dungeon)
+    {
+        for (const Room& room : _dungeon->GetRooms())
+        {
+            for (const Door& door : room.GetDoors())
+            {
+                if (_point.x == door.GetCoord().x || _point.y == door.GetCoord().y)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+
+    //----------------------------------------------------------------------------
+    void DungeonGenerator::GenerateAccesses(const Dungeon::Ptr& _dungeon)
+    {
+        const Room& entranceRoom = _dungeon->GetRooms()[rand() % _dungeon->GetRooms().size()];
+        Coord2d entrance;
+
+        do
+        {
+            entrance = CreateDoor(entranceRoom).GetCoord();
+
+        } while (CouldBlockCorridor(entrance, _dungeon));
+
+        const Room& exitRoom = _dungeon->GetRooms()[rand() % _dungeon->GetRooms().size()];
+        Coord2d exit;
+
+        do
+        {
+            exit = CreateDoor(exitRoom).GetCoord();
+
+        } while (CouldBlockCorridor(exit, _dungeon));
+
+        _dungeon->SetAccesses(entrance, exit);
+    }
+
+    //----------------------------------------------------------------------------
     Room DungeonGenerator::CreateRoom()
     {
         Coord2d size;
         Coord2d coord;
 
-        size.w = ms_Param.RoomSizeMin + (rand() % (ms_Param.RoomSizeMax - ms_Param.RoomSizeMin));
-        size.h = ms_Param.RoomSizeMin + (rand() % (ms_Param.RoomSizeMax - ms_Param.RoomSizeMin));
+        static unsigned minMaxDiff = ms_Param.RoomSizeMax - ms_Param.RoomSizeMin + 1;
+
+        size.w = ms_Param.RoomSizeMin + (rand() % minMaxDiff);
+        size.h = ms_Param.RoomSizeMin + (rand() % minMaxDiff);
 
         coord.x = rand() % (ms_Param.WorldSize - size.w);
         coord.y = rand() % (ms_Param.WorldSize - size.h);
 
         Room room(coord, size);
 
-        unsigned maxDoor = (rand() % ms_Param.RoomDoorsCount) + 1;
+        unsigned maxDoor = (rand() % ms_Param.RoomDoorsCount);
 
         do 
         {
@@ -159,13 +209,13 @@ namespace rdg
 
         if (rand() % 2)
         {
-            doorCoord.x = _room.GetCoord().x + (_room.GetSize().w * (rand() % 2));
+            doorCoord.x = _room.GetCoord().x + ((_room.GetSize().w - 1) * (rand() % 2));
             doorCoord.y = _room.GetCoord().y + (rand() % _room.GetSize().h);
         }
         else
         {
             doorCoord.x = _room.GetCoord().x + (rand() % _room.GetSize().w);
-            doorCoord.y = _room.GetCoord().y + (_room.GetSize().h * (rand() % 2));
+            doorCoord.y = _room.GetCoord().y + ((_room.GetSize().h - 1) * (rand() % 2));
         }
 
         return Door(doorCoord);;
@@ -173,13 +223,20 @@ namespace rdg
 
     //----------------------------------------------------------------------------
     Room DungeonGenerator::CreateBubble()
-    {
+    {   
+        static const float fBubbleSizeMin((ms_Param.RoomSizeMin * ms_Param.BubbleRoomRatio) / 100.f);
+        static const float fBubbleSizeMax((ms_Param.RoomSizeMax * ms_Param.BubbleRoomRatio) / 100.f);
+
+        static const unsigned bubbleSizeMin(std::lround(fBubbleSizeMin));
+        static const unsigned bubbleSizeMax(std::lround(fBubbleSizeMax));
+
+        static const unsigned minMaxDiff(bubbleSizeMax - bubbleSizeMin + 1);
+
         Coord2d size;
+        size.w = bubbleSizeMin + (rand() % minMaxDiff);
+        size.h = bubbleSizeMin + (rand() % minMaxDiff);
+
         Coord2d coord;
-
-        size.w = (rand() % 3) + 2;
-        size.h = (rand() % 3) + 2;
-
         coord.x = rand() % (ms_Param.WorldSize - size.w);
         coord.y = rand() % (ms_Param.WorldSize - size.h);
 

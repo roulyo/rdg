@@ -8,7 +8,7 @@ namespace rdg
     //----------------------------------------------------------------------------
     struct DungeonGenerationParam
     {
-        unsigned WorldSize = 80;
+        unsigned WorldSize = 60;
 
         unsigned RoomCountMin = 4;
         unsigned RoomCountMax = 6;
@@ -19,6 +19,7 @@ namespace rdg
         unsigned RoomDoorsCount = 2;
 
         unsigned BubbleIntensity = 80;
+        unsigned BubbleRoomRatio = 33;
     };
 
     //----------------------------------------------------------------------------
@@ -37,6 +38,10 @@ namespace rdg
             int h;
         };
 
+        bool operator==(const Coord2d& _other) const
+        {
+            return x == _other.x && y == _other.y;
+        }
     };
 
     //----------------------------------------------------------------------------
@@ -49,17 +54,28 @@ namespace rdg
     //----------------------------------------------------------------------------
     class DungeonMatrix
     {
-    private:
-        typedef std::vector<std::vector<bool> >  MatrixType;
+    public:
+        enum class TyleType
+        {
+            Empty,
+            Floor,
+            Entrance,
+            Exit,
 
+            TyleTypeCount
+        };
+
+    private:
+        typedef std::vector<std::vector<TyleType> >  MatrixType;
+        
     public:
         DungeonMatrix(unsigned _size);
 
-        const std::vector<std::vector<bool> >& operator*() const;
-        std::vector<std::vector<bool> >& operator*();
+        const std::vector<std::vector<TyleType> >& operator*() const;
+        std::vector<std::vector<TyleType> >& operator*();
 
-        const std::vector<bool>& operator[](unsigned _index) const;
-        std::vector<bool>& operator[](unsigned _index);
+        const std::vector<TyleType>& operator[](unsigned _index) const;
+        std::vector<TyleType>& operator[](unsigned _index);
 
         unsigned GetSize() const;
 
@@ -91,6 +107,7 @@ namespace rdg
         bool Intersects(const Room& _other) const;
         bool Contains(const Coord2d& _point) const;
         bool Contains(const Room& _other) const;
+        bool HasDoorBlockedBy(const Coord2d& _point) const;
 
         void AddDoor(const Door& _door);
 
@@ -139,11 +156,14 @@ namespace rdg
         void AddRoom(const Room& _room);
         void AddBubble(const Room& _bubble);
         void AddCorridor(const Corridor& _corridor);
+        void SetAccesses(const Coord2d& _entrance, const Coord2d& _exit);
 
         const Coord2d& GetSize() const;
         const std::vector<Room>& GetRooms() const;
         const std::vector<Room>& GetBubbles() const;
         const std::vector<Corridor>& GetCorridors() const;
+        const Coord2d& GetEntrance() const;
+        const Coord2d& GetExit() const;
 
     private:
         Coord2d                 m_Size;
@@ -151,6 +171,9 @@ namespace rdg
         std::vector<Room>       m_Rooms;
         std::vector<Room>       m_Bubbles;
         std::vector<Corridor>   m_Corridors;
+
+        Coord2d                 m_Entrance;
+        Coord2d                 m_Exit;
 
     };
 

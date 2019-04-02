@@ -11,32 +11,32 @@ namespace rdg
     {
         m_Matrix.resize(_size);
 
-        for (std::vector<bool>& row : m_Matrix)
+        for (std::vector<TyleType>& row : m_Matrix)
         {
-            row.resize(_size, false);
+            row.resize(_size, TyleType::Empty);
         }
     }
 
     //----------------------------------------------------------------------------
-    const std::vector<std::vector<bool>>& DungeonMatrix::operator*() const
+    const std::vector<std::vector<DungeonMatrix::TyleType>>& DungeonMatrix::operator*() const
     {
         return m_Matrix;
     }
 
     //----------------------------------------------------------------------------
-    std::vector<std::vector<bool>>& DungeonMatrix::operator*()
+    std::vector<std::vector<DungeonMatrix::TyleType>>& DungeonMatrix::operator*()
     {
         return m_Matrix;
     }
 
     //----------------------------------------------------------------------------
-    const std::vector<bool>& DungeonMatrix::operator[](unsigned _index) const
+    const std::vector<DungeonMatrix::TyleType>& DungeonMatrix::operator[](unsigned _index) const
     {
         return m_Matrix[_index];
     }
 
     //----------------------------------------------------------------------------
-    std::vector<bool>& DungeonMatrix::operator[](unsigned _index)
+    std::vector<DungeonMatrix::TyleType>& DungeonMatrix::operator[](unsigned _index)
     {
         return m_Matrix[_index];
     }
@@ -99,8 +99,8 @@ namespace rdg
     {
         int interLeft = std::max(_other.m_Coord.x, m_Coord.x);
         int interTop = std::max(_other.m_Coord.y, m_Coord.y);
-        int interRight = std::min(_other.m_Coord.x + _other.m_Size.w, m_Coord.x + m_Size.w);
-        int interBottom = std::min(_other.m_Coord.y + _other.m_Size.h, m_Coord.y + m_Size.h);
+        int interRight = std::min(_other.m_Coord.x + _other.m_Size.w - 1, m_Coord.x + m_Size.w - 1);
+        int interBottom = std::min(_other.m_Coord.y + _other.m_Size.h - 1, m_Coord.y + m_Size.h - 1);
 
         return ((interLeft <= interRight) && (interTop <= interBottom));
     }
@@ -109,22 +109,22 @@ namespace rdg
     bool Room::Contains(const Coord2d& _point) const
     {
         return (_point.x >= m_Coord.x)
-            && (_point.x <= (m_Coord.x + m_Size.w))
+            && (_point.x < (m_Coord.x + m_Size.w))
             && (_point.y >= m_Coord.y)
-            && (_point.y <= (m_Coord.y + m_Size.h));
+            && (_point.y < (m_Coord.y + m_Size.h));
     }
 
     //----------------------------------------------------------------------------
     bool Room::Contains(const Room& _other) const
     {
         Coord2d topLeft = { _other.m_Coord.x, _other.m_Coord.y };
-        Coord2d topRight = { _other.m_Coord.x + _other.m_Size.w, _other.m_Coord.y };
-        Coord2d bottomLeft = { _other.m_Coord.x, _other.m_Coord.y + _other.m_Size.h };
-        Coord2d bottomRight = { _other.m_Coord.x + _other.m_Size.w, _other.m_Coord.y + _other.m_Size.h };
+        Coord2d topRight = { _other.m_Coord.x + _other.m_Size.w - 1, _other.m_Coord.y };
+        Coord2d bottomLeft = { _other.m_Coord.x, _other.m_Coord.y + _other.m_Size.h - 1 };
+        Coord2d bottomRight = { _other.m_Coord.x + _other.m_Size.w - 1, _other.m_Coord.y + _other.m_Size.h - 1 };
 
         return Contains(topLeft) && Contains(topRight) && Contains(bottomLeft) && Contains(bottomRight);
     }
-    
+
     //----------------------------------------------------------------------------
     int Room::GetId() const
     {
@@ -218,6 +218,13 @@ namespace rdg
     }
 
     //----------------------------------------------------------------------------
+    void Dungeon::SetAccesses(const Coord2d& _entrance, const Coord2d& _exit)
+    {
+        m_Entrance = _entrance;
+        m_Exit = _exit;
+    }
+
+    //----------------------------------------------------------------------------
     const Coord2d& Dungeon::GetSize() const
     {
         return m_Size;
@@ -239,6 +246,18 @@ namespace rdg
     const std::vector<Corridor>& Dungeon::GetCorridors() const
     {
         return m_Corridors;
+    }
+
+    //----------------------------------------------------------------------------
+    const Coord2d& Dungeon::GetEntrance() const
+    {
+        return m_Entrance;
+    }
+
+    //----------------------------------------------------------------------------
+    const Coord2d& Dungeon::GetExit() const
+    {
+        return m_Exit;
     }
 
 }

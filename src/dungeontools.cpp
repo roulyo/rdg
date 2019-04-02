@@ -16,7 +16,7 @@ namespace rdg
             {
                 for (int j = _room.GetCoord().y; j < _room.GetCoord().y + _room.GetSize().h; ++j)
                 {
-                    _outMatrix[i][j] = true;
+                    _outMatrix[i][j] = DungeonMatrix::TyleType::Floor;
                 }
             }
         }
@@ -43,6 +43,35 @@ namespace rdg
             }
         }
 
+        //----------------------------------------------------------------------------
+        static void DumpEntrance(const Coord2d& _entrance, DungeonMatrix& _outMatrix)
+        {
+            _outMatrix[_entrance.x][_entrance.y] = DungeonMatrix::TyleType::Entrance;
+        }
+
+        //----------------------------------------------------------------------------
+        static void DumpExit(const Coord2d& _exit, DungeonMatrix& _outMatrix)
+        {
+            _outMatrix[_exit.x][_exit.y] = DungeonMatrix::TyleType::Exit;
+        }
+
+        //----------------------------------------------------------------------------
+        static char Print(DungeonMatrix::TyleType _tyleType)
+        {
+            switch (_tyleType)
+            {
+            case DungeonMatrix::TyleType::Empty:
+                return ' ';
+            case DungeonMatrix::TyleType::Floor:
+                return '.';
+            case DungeonMatrix::TyleType::Entrance:
+                return 'S';
+            case DungeonMatrix::TyleType::Exit:
+                return 'F';
+            default:
+                abort();
+            }
+        }
     }
 
 
@@ -64,7 +93,7 @@ namespace rdg
         {
             for (unsigned i = 0; i < _matrix.GetSize(); ++i)
             {
-                std::cout << (_matrix[i][j] ? "X" : " ");
+                std::cout << DungeonToolsHelper::Print(_matrix[i][j]);
             }
 
             std::cout << std::endl;
@@ -77,6 +106,8 @@ namespace rdg
         DungeonToolsHelper::DumpRooms(_dungeon.GetRooms(), _outMatrix);
         DungeonToolsHelper::DumpRooms(_dungeon.GetBubbles(), _outMatrix);
         DungeonToolsHelper::DumpCorridors(_dungeon.GetCorridors(), _outMatrix);
+        DungeonToolsHelper::DumpEntrance(_dungeon.GetEntrance(), _outMatrix);
+        DungeonToolsHelper::DumpExit(_dungeon.GetExit(), _outMatrix);
     }
 
 }

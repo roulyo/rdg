@@ -14,6 +14,7 @@ namespace rdg
         static void GenerateRooms(const Dungeon::Ptr& _dungeon);
         static void LinkRooms(const Dungeon::Ptr& _dungeon);
         static void GenerateBubbles(const Dungeon::Ptr& _dungeon);
+        static void GenerateAccesses(const Dungeon::Ptr& _dungeon);
 
         static Room CreateRoom();
         static Door CreateDoor(const Room& _room);
